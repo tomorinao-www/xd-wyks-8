@@ -542,6 +542,31 @@ u8 pwd[6] = {'1', '2', '3', '4', '5', '6'}; // 初始密码，定义为字符数
 u16 adminPassword = 12345678;				// 管理员密码，定义为整型
 u8 tt;										// 用于main函数，存放用户按下的键的键值
 
+// ===========键盘布局============
+#define KEY_SHARP 0x0e
+#define KEY_ADMIN 0x03
+#define KEY_MODIFY 0x07
+#define KEY_DELETE 0x0b
+#define KEY_SHIFT 0x0c
+u8 KEY_MAP[16] = {
+	7,			// 0
+	8,			// 1
+	9,			// 2
+	KEY_ADMIN,	// 3
+	4,			// 4
+	5,			// 5
+	6,			// 6
+	KEY_MODIFY, // 7
+	1,			// 8
+	2,			// 9
+	3,			// a
+	KEY_DELETE, // b
+	KEY_SHIFT,	// c
+	0,			// d
+	KEY_SHARP,	// e
+	0xf			// f
+};
+
 // 延时子程序
 void delay(u16 ms) // 1000
 {
@@ -609,9 +634,9 @@ u8 key()
 // shift键获取字母
 u8 shift()
 {
-	u8 currChar = key();
-	while (currChar > 0x09) // 若按下的键值大于9，则不断要求用户重新输入
-		currChar = key();
+	u8 currChar = KEY_MAP[key()];
+	while (currChar > 9) // 若按下的键值大于9，则不断要求用户重新输入
+		currChar = KEY_MAP[key()];
 	return currChar + (u8)'a'; // 在'a'的ASCII码基础上进行0-9的偏移，得到不同字母('a'-'j')的ASCII码
 }
 
@@ -661,8 +686,8 @@ u16 checkPwd()
 	// 重复扫描6次键盘输入
 	for (i = 0; i < 6; i++)
 	{
-		buf[i] = key();
-		if (buf[i] == 0x0f) // 若按下了我们设定的微机键盘del键，则清屏后重新输入密码
+		buf[i] = KEY_MAP[key()];
+		if (buf[i] == KEY_DELETE) // 若按下了我们设定的微机键盘del键，则清屏后重新输入密码
 		{
 			i = -1;		   // 先置i=-1，以使continue之后i=0，可以继续按键盘6次
 			LCD_INIT();	   // 液晶初始化
@@ -671,7 +696,7 @@ u16 checkPwd()
 			LCD_INIT();	   // 液晶初始化
 			continue;	   // 进入下一循环
 		}
-		if (buf[i] == 0x0e)
+		if (buf[i] == KEY_SHIFT)
 			buf[i] = shift();
 		else
 			buf[i] += (u8)'0';
@@ -694,7 +719,7 @@ u16 checkPwd()
 	while (1)
 	{
 		// 依位比较输入密码和保存的密码，如果中间有一位不匹配，则返回0，完全匹配说明密码正确
-		if (key() == 0x0a)
+		if (key() == KEY_SHARP)
 		{
 			for (i = 0; i < 6; i++)
 			{
@@ -714,8 +739,8 @@ void changePwd()
 	//  重复6次读取键盘输入
 	for (i = 0; i < 6; i++)
 	{
-		buf[i] = key();
-		if (buf[i] == 0x0f) // 若按下了我们设定的微机键盘del键，则清屏后重新输入密码
+		buf[i] = KEY_MAP[key()];
+		if (buf[i] == KEY_DELETE) // 若按下了我们设定的微机键盘del键，则清屏后重新输入密码
 		{
 			i = -1;		   // 先置i=-1，以使continue之后i=0，可以继续按键盘6次
 			LCD_INIT();	   // 液晶初始化
@@ -724,10 +749,10 @@ void changePwd()
 			LCD_INIT();	   // 液晶初始化
 			continue;	   // 进入下一循环
 		}
-		if (buf[i] == 0x0e)	   // 如果按下shift键
-			buf[i] = shift();  // 获取字母型变量，原先0-9的数字键现在变为a-j字母键
-		else				   // 如果未按下shift键
-			buf[i] += (u8)'0'; // 数字变量要转成unsigned char类型，即转成ASCII码型数字，方便显示
+		if (buf[i] == KEY_SHIFT) // 如果按下shift键
+			buf[i] = shift();	 // 获取字母型变量，原先0-9的数字键现在变为a-j字母键
+		else					 // 如果未按下shift键
+			buf[i] += (u8)'0';	 // 数字变量要转成unsigned char类型，即转成ASCII码型数字，方便显示
 		LCD_INIT();
 		switch (i)
 		{
@@ -753,7 +778,7 @@ void changePwd()
 	}
 	while (1)
 	{
-		if (key() == 0x0a)
+		if (key() == KEY_SHARP)
 		{ // 依位次替换原先密码为新密码
 			for (i = 0; i < 6; i++)
 				pwd[i] = buf[i];
@@ -786,8 +811,8 @@ u16 adminOption()
 		u16 inputPassword = 0;	// ！！！！！！！！！初始化！！！！！！！！！
 		for (i = 0; i < 8; i++) // 管理员输入密码（扫描8次键盘）
 		{
-			buf[i] = key();
-			if (buf[i] == 0x0f) // 若按下了我们设定的微机键盘del键，则清屏后重新输入密码
+			buf[i] = KEY_MAP[key()];
+			if (buf[i] == KEY_DELETE) // 若按下了我们设定的微机键盘del键，则清屏后重新输入密码
 			{
 				i = -1;		   // 先置i=-1，以使continue之后i=0，可以继续按键盘6次
 				LCD_INIT();	   // 液晶初始化
@@ -832,7 +857,7 @@ u16 adminOption()
 		}
 		while (1)
 		{
-			if (key() == 0x0a)
+			if (key() == KEY_SHARP)
 				break;
 		}
 		if (inputPassword == adminPassword)
@@ -883,6 +908,58 @@ u16 openLock()
 	}
 }
 
+void mode_unlock()
+{
+	LCD_INIT();
+	delayTime();
+	showEnterPwd(); // 第2行显示"输入密码"
+
+	// 如果开锁成功则返回1,如果密码错误超过三次则返回0
+	if (openLock())
+	{
+		LCD_INIT(); // 液晶初始化
+		delayTime();
+		showCorrectPwd(); // 第2行显示"密码正确"
+		delayTime();
+		greenl(); // 绿灯亮10s
+		redl();	  // 红灯亮5s
+		blackl(); // 全熄灭
+	}
+	else // 三次密码错误，锁定系统
+	{
+		LCD_INIT();
+		delayTime();
+		showSystemLocked(); // 第2行显示"系统锁定"
+		yellowl();			// 黄灯闪烁5s
+	}
+}
+
+void mode_modify()
+{
+	// 打印输入原密码
+	LCD_INIT();
+	showUsedPwd();
+	if (modify()) // 修改密码，如果修改密码成功，返回1，否则返回0
+	{
+		LCD_INIT();
+		showModifiedSuccess();
+		delayTime();
+	}
+}
+
+void mode_admin()
+{
+	LCD_INIT();
+	showEnterPwd(); // 第2行显示"输入密码"
+	delayTime();
+	if (adminOption()) // adminOption()函数：如果管理员密码输入正确，将开锁密码重置为123456并返回1
+	{
+		LCD_INIT();
+		showResetSuccess(); // 显示"重置成功"
+		delayTime();
+	}
+}
+
 void main()
 {
 	outportb(CON_Addr, 0x81); // 写控制字1000 0001————A口、B口方式0，输出；C口低4位：输入
@@ -894,64 +971,20 @@ void main()
 		LCD_INIT();
 		delayTime();
 		showInputButton();
-		tt = key();
-		// 输入a，尝试开锁
-		if (tt == 0x0a)
+		tt = KEY_MAP[key()];
+		switch (tt)
 		{
-			LCD_INIT();
-			delayTime();
-			showEnterPwd(); // 第2行显示"输入密码"
-
-			// 如果开锁成功则返回1,如果密码错误超过三次则返回0
-			if (openLock())
-			{
-				LCD_INIT(); // 液晶初始化
-				delayTime();
-				showCorrectPwd(); // 第2行显示"密码正确"
-				delayTime();
-				greenl(); // 绿灯亮10s
-				redl();	  // 红灯亮5s
-				blackl(); // 全熄灭
-				continue; // 进入下一循环
-			}
-
-			// 三次密码错误，锁定系统
-			else
-			{
-				LCD_INIT();
-				delayTime();
-				showSystemLocked(); // 第2行显示"系统锁定"
-				yellowl();			// 黄灯闪烁5s
-				continue;			// 进入下一循环
-			}
-		}
-
-		// 输入b，修改密码功能
-		else if (tt == 0x0b)
-		{
-			// 打印输入原密码
-			LCD_INIT();
-			showUsedPwd();
-			if (modify()) // 修改密码，如果修改密码成功，返回1，否则返回0
-			{
-				LCD_INIT();
-				showModifiedSuccess();
-				delayTime();
-			}
-		}
-
-		// 输入c，进入管理员功能：将开锁密码重置为123456
-		else if (tt == 0x0c)
-		{
-			LCD_INIT();
-			showEnterPwd(); // 第2行显示"输入密码"
-			delayTime();
-			if (adminOption()) // adminOption()函数：如果管理员密码输入正确，将开锁密码重置为123456并返回1
-			{
-				LCD_INIT();
-				showResetSuccess(); // 显示"重置成功"
-				delayTime();
-			}
+		case KEY_SHARP: // 按下 # ，开启正常开锁模式
+			mode_unlock();
+			break;
+		case KEY_MODIFY: // 按下modify，开启修改密码模式
+			mode_modify();
+			break;
+		case KEY_ADMIN: // 按下admin，开启管理员模式
+			mode_admin();
+			break;
+		default:
+			break;
 		}
 	}
 }
