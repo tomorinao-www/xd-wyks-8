@@ -5,11 +5,11 @@ https://blog.csdn.net/qq_45717425/article/details/125503197
 
 ## 键盘布局
 
-|   7   |  8  |  9  | admin  |
-| :---: | :-: | :-: | :----: |
-|   4   |  5  |  6  | modify |
-|   1   |  2  |  3  | delete |
-| shift |  0  |  #  |        |
+| 7 (h) | 8 (i) | 9 (j) | admin  |
+| :---: | :---: | :---: | :----: |
+| 4 (e) | 5 (f) | 6 (g) | modify |
+| 1 (b) | 2 (c) | 3 (d) | delete |
+| shift | 0 (a) |   #   |        |
 
 ## 硬件布线图
 
